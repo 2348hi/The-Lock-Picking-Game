@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pick the Lock Game</title>
+    <style>
+        :root {
+            --bg-color: #f3f4f6;
+            --text-color: #374151;
+            --card-bg: white;
+            --button-bg: #3b82f6;
+            --button-text: white;
+            --button-hover: #2563eb;
+            --reset-button-bg: transparent;
+            --reset-button-border: #d1d5db;
+            --reset-button-text: #374151;
+            --reset-button-hover: #f3f4f6;
+            --hint-bar-bg: #e5e7eb;
+            --hint-progress-bg: #10b981;
+            --success-color: #10b981;
+            --warning-color: #fbbf24;
+        }
+
+        .dark-mode {
+            --bg-color: #111827;
+            --text-color: #f3f4f6;
+            --card-bg: #1f2937;
+            --button-bg: #3b82f6;
+            --button-text: #f3f4f6;
+            --button-hover: #2563eb;
+            --reset-button-bg: transparent;
+            --reset-button-border: #4b5563;
+            --reset-button-text: #f3f4f6;
+            --reset-button-hover: #374151;
+            --hint-bar-bg: #374151;
+            --hint-progress-bg: #059669;
+            --success-color: #10b981;
+            --warning-color: #fbbf24;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .game-container {
+            background-color: var(--card-bg);
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            width: 100%;
+            max-width: 28rem;
+            transition: background-color 0.3s;
+        }
+        h1 {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        .lock-icon {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        .pin-container {
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        input[type="range"] {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+        .hint-bar {
+            height: 0.5rem;
+            background-color: var(--hint-bar-bg);
+            border-radius: 9999px;
+            overflow: hidden;
+            transition: background-color 0.3s;
+        }
+        .hint-progress {
+            height: 100%;
+            background-color: var(--hint-progress-bg);
+            width: 0%;
+            transition: width 0.3s ease, background-color 0.3s;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 0.5rem 1rem;
+            margin-top: 0.75rem;
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            border: none;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: var(--button-hover);
+        }
+        #resetButton {
+            background-color: var(--reset-button-bg);
+            color: var(--reset-button-text);
+            border: 1px solid var(--reset-button-border);
+        }
+        #resetButton:hover {
+            background-color: var(--reset-button-hover);
+        }
+        .game-info {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.875rem;
+            color: var(--text-color);
+        }
+        #gameStatus {
+            font-weight: 500;
+            margin-top: 0.5rem;
+        }
+        .mode-toggle {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            align-items: center;
+        }
+        .mode-toggle label {
+            margin-right: 0.5rem;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+            background-color: #4b5563;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: #f3f4f6;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #3b82f6;
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+    </style>
+</head>
+<body>
+    <div class="mode-toggle">
+        <label for="darkModeToggle">Dark Mode</label>
+        <label class="switch">
+            <input type="checkbox" id="darkModeToggle">
+            <span class="slider"></span>
+        </label>
+    </div>
+    <div class="game-container">
+        <h1>Pick the Lock</h1>
+        <div class="lock-icon" id="lockIcon">🔒</div>
+        <div id="pinContainers"></div>
+        <button id="unlockButton">Try to Unlock</button>
+        <button id="resetButton">Reset Game</button>
+        <div class="game-info">
+            <p>Attempts: <span id="attempts">0</span></p>
+            <p>Hint: The fuller the bar, the closer the pin is to the correct position.</p>
+            <p id="gameStatus"></p>
+        </div>
+    </div>
+
+    <script>
+        const pinCount = 5;
+        let pins = Array(pinCount).fill(0);
+        let targetPins = Array(pinCount).fill(0);
+        let attempts = 0;
+        let isLocked = true;
+
+        function initGame() {
+            const pinContainers = document.getElementById('pinContainers');
+            pinContainers.innerHTML = '';
+
+            for (let i = 0; i < pinCount; i++) {
+                const pinContainer = document.createElement('div');
+                pinContainer.className = 'pin-container';
+                pinContainer.innerHTML = `
+                    <label for="pin${i}">Pin ${i + 1}</label>
+                    <input type="range" id="pin${i}" min="0" max="100" value="0">
+                    <div class="hint-bar">
+                        <div class="hint-progress" id="hint${i}"></div>
+                    </div>
+                `;
+                pinContainers.appendChild(pinContainer);
+
+                const slider = document.getElementById(`pin${i}`);
+                slider.addEventListener('input', () => updatePin(i, parseInt(slider.value)));
+            }
+
+            resetGame();
+        }
+
+        function updatePin(index, value) {
+            pins[index] = value;
+            updateHint(index);
+        }
+
+        function updateHint(index) {
+            const hintBar = document.getElementById(`hint${index}`);
+            const hintValue = calculateHintValue(pins[index], targetPins[index]);
+            hintBar.style.width = `${hintValue}%`;
+        }
+
+        function calculateHintValue(pinValue, targetValue) {
+            const difference = Math.abs(pinValue - targetValue);
+            return 100 - difference;
+        }
+
+        function checkLock() {
+            attempts++;
+            document.getElementById('attempts').textContent = attempts;
+
+            const tolerance = 5;
+            isLocked = !pins.every((pin, index) => Math.abs(pin - targetPins[index]) <= tolerance);
+
+            document.getElementById('lockIcon').textContent = isLocked ? '🔒' : '🔓';
+            const gameStatus = document.getElementById('gameStatus');
+            if (!isLocked) {
+                gameStatus.textContent = 'Lock Picked Successfully!';
+                gameStatus.style.color = 'var(--success-color)';
+            } else {
+                gameStatus.textContent = 'Keep trying!';
+                gameStatus.style.color = 'var(--warning-color)';
+            }
+        }
+
+        function resetGame() {
+            pins = Array(pinCount).fill(0);
+            targetPins = Array(pinCount).fill(0).map(() => Math.floor(Math.random() * 101));
+            attempts = 0;
+            isLocked = true;
+
+            document.getElementById('attempts').textContent = attempts;
+            document.getElementById('lockIcon').textContent = '🔒';
+            document.getElementById('gameStatus').textContent = '';
+
+            for (let i = 0; i < pinCount; i++) {
+                const slider = document.getElementById(`pin${i}`);
+                slider.value = 0;
+                updateHint(i);
+            }
+        }
+
+        document.getElementById('unlockButton').addEventListener('click', checkLock);
+        document.getElementById('resetButton').addEventListener('click', resetGame);
+
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        darkModeToggle.addEventListener('change', () => {
+            document.body.classList.toggle('dark-mode');
+        });
+
+        initGame();
+    </script>
+</body>
+</html>
